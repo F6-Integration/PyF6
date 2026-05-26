@@ -18,4 +18,8 @@ setup(
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
     ],
+    project_urls={
+        "Homepage": "https://github.com/F6-Integration/PyF6",
+        "Repository": "https://github.com/F6-Integration/PyF6",
+    },
 )
