@@ -30,10 +30,10 @@ logger = logging.getLogger(__name__)
 class GeneratorInfo(object):
     collection_name: str
     session_type: str
-    date_from: str = None
+    date_from: Optional[str] = None
     date_to: Optional[str] = None
     query: Optional[str] = None
-    limit: Union[str, int] = None
+    limit: Union[str, int, None] = None
     keys: Optional[Dict[Any, str]] = None
     iocs_keys: Optional[Dict] = None
     ignore_validation: Optional[bool] = False
@@ -69,8 +69,8 @@ class GeneratorInfo(object):
 
 @dataclass(order=True)
 class TIGeneratorInfo(GeneratorInfo):
-    apply_hunting_rules: Union[int, str] = None
-    is_tailored: Union[int, str] = None
+    apply_hunting_rules: Union[int, str, None] = None
+    is_tailored: Union[int, str, None] = None
     parse_events: Optional[bool] = None
 
     def _validate_default_fields(self, collections_info=CollectionConsts.TI_COLLECTIONS_INFO):
@@ -105,6 +105,14 @@ class DRPGeneratorInfo(GeneratorInfo):
         super()._validate_default_fields(collections_info=CollectionConsts.DRP_COLLECTIONS_INFO)
 
 
+@dataclass(order=True)
+class ASMGeneratorInfo(GeneratorInfo):
+    company_id: Union[str, int, None] = None
+
+    def _validate_default_fields(self, collections_info=CollectionConsts.ASM_COLLECTIONS_INFO):
+        super()._validate_default_fields(collections_info=CollectionConsts.ASM_COLLECTIONS_INFO)
+
+
 class Parser(object):
     """
     An object that handles raw JSON with various methods.
@@ -114,8 +122,8 @@ class Parser(object):
         # type: (Dict, Dict[Any, str], Dict[str, str]) -> None
         """
         :param chunk: data portion.
-        :param keys: fields to find in portion.
-        :param iocs_keys: IOCs to find in portion.
+        :param keys: fields to find in the portion.
+        :param iocs_keys: IOCs to find in the portion.
         """
         self.raw_dict = chunk
         self.raw_json = json.dumps(chunk)
@@ -168,15 +176,15 @@ class Parser(object):
     ):
         # type: (Optional[Dict[Any, str]], Optional[bool], List[Tuple[str, List]], bool, bool, dict) -> Union[str, List[Dict[Any, Any]]]
         """
-        Returns parsed portion list of feeds using keys provided for current collection.
-        Every dict in list is single parsed feed.
+        Returns the parsed portion list of feeds using keys provided for the current collection.
+        Every dict in the list is a single parsed feed.
 
-        :param keys: if provided override base keys set in poller.
-        :param as_json: if True returns portion in JSON format.
-        :param filter_map: filter to **ignore**/**accept only** feeds which contains values in filter_map.
-        Depends on **ignore** flag.
+        :param keys: if provided, override base keys set in the poller.
+        :param as_json: if True returns a portion in JSON format.
+        :param filter_map: filter to **ignore**/**accept-only** feeds which contain values in filter_map.
+        Depends on the **ignore** flag.
         :param ignore: flag to ignore values in filter_map. By default, set to False.
-        :param check_existence: flag to check existence of a key in filter_map. By default, set to False.
+        :param check_existence: flag to check the existence of a key in filter_map. By default, set to False.
         """
 
         if not self.keys and not keys:
@@ -227,11 +235,11 @@ class Parser(object):
     def bulk_parse_portion(self, keys_list, as_json=False):
         # type: (List[Dict[Any, str]], Optional[bool]) -> Union[str, List[List[Dict[Any, Any]]]]
         """
-        Parses feeds in portion using every keys dict in the list.
-        Every feed in parsed portion will be presented as list with parsed dicts for every keys dict.
+        Parses feeds in the portion using every key's dict in the list.
+        Every feed in the parsed portion will be presented as a list with parsed dicts for every key's dict.
 
         :param keys_list: list of keys dicts you want in return.
-        :param as_json: if True returns portion in JSON format.
+        :param as_json: if True returns the portion in JSON format.
         """
         parsed_portion = []
         for keys in keys_list:
@@ -252,14 +260,14 @@ class Parser(object):
     ):
         # type: (Optional[Dict], Optional[bool], List[Tuple[str, List]], bool, bool) -> Union[str, Dict[str, List]]
         """
-        Returns parsed portion dict of feeds using ioc_keys provided for current collection.
-        Keys are fields to search for current collection, values are list of gathered IOCs for current portion.
+        Returns parsed portion dict of feeds using ioc_keys provided for the current collection.
+        Keys are fields to search for the current collection; values are a list of gathered IOCs for the current portion.
 
-        :param keys: if provided override base iocs_keys set in poller.
+        :param keys: if provided, override base iocs_keys set in poller.
         :param as_json: if True returns IOCs in JSON format.
-        :param filter_map: filter to **ignore**/**accept only** feeds which contains values in filter_map. Depends on **ignore** flag.
+        :param filter_map: filter to **ignore**/**accept-only** feeds which contain values in filter_map. Depends on the **ignore** flag.
         :param ignore: flag to ignore values in filter_map. By default, set to False.
-        :param check_existence: flag to check existence of a key in filter_map. By default, set to False.
+        :param check_existence: flag to check the existence of a key in filter_map. By default, set to False.
         """
         if not self.iocs_keys and not keys:
             raise ParserException("You didn't provide any keys for getting IOCs.")
@@ -320,7 +328,7 @@ class Poller(object):
     def __init__(self, username, api_key, api_url, **kwargs):
         # type: (str, str, Optional[str], Any) -> None
         """
-        :param username: Login for chosen product (Portal).
+        :param username: Login for the chosen product (Portal).
         :param api_key: API key, generated in your product profile (Portal).
         :param api_url: URL for product API (Portal).
         """
@@ -383,7 +391,7 @@ class Poller(object):
         Send request based on endpoint and custom params
 
         :param endpoint: the endpoint will be applied to the existing base URL (api_url) using the urljoin.
-        :param params: dict-like object with params which will be set using the urlencode.
+        :param params: dict-like object with params that will be set using the urlencode.
         :param method: HTTP method ('GET' or 'POST').
         :param decode: decode output in JSON (True) or leave as plain text (False). By default, set to True.
         """
@@ -438,7 +446,7 @@ class Poller(object):
         """
         Sets proxies for `Session` object.
 
-        We'd recommend to use ProxyConfigurator class for proxies.
+        We'd recommend using the ProxyConfigurator class for proxies.
 
             Explore the next sample:
 
@@ -456,15 +464,15 @@ class Poller(object):
     def set_verify(self, verify):
         # type: (Union[bool, str]) -> None
         """
-        Sets verify for `Session` object.
+        Sets the 'verify' parameter for a `Session` object.
 
         :param verify: Either a boolean or a path-like. It controls whether we verify
-            the server's TLS certificate, or a string. In case of string it must be a path
+            the server's TLS certificate or a string. In the case of string, it must be a path
             to a CA bundle to use. Defaults to ``True``. When set to
             ``False``, requests will accept any TLS certificate presented by
-            the server, and will ignore hostname mismatches and/or expired
+            the server and will ignore hostname mismatches and/or expired
             certificates, which will make your application vulnerable to
-            man-in-the-middle (MitM) attacks. Setting verify to ``False``
+            man-in-the-middle (MitM) attacks. Setting the 'verify' parameter to ``False``
             may be useful during local development or testing.
         """
         self._session.verify = verify
@@ -512,7 +520,7 @@ class Poller(object):
                 {"result_name": "searchable_key_1.searchable_key_2"}
 
 
-        Parser search keys recursively in lists/dicts. If you want to set your own value in result,
+        Parser search keys recursively in lists/dicts. If you want to set your own value in the result,
         then start with * before the name. You also can make a full template to nest data in the way you want.
 
         Explore the next sample:
@@ -582,11 +590,11 @@ class Poller(object):
         # type: (str, Dict[str, str], Optional[bool]) -> None
         """
         Sets keys to search IOCs in the selected collection. `keys` should be the python dict in this format:
-        {key_name_you_want_in_result_dict: data_you_want_to_find}. Parser finds keys recursively in lists/dicts
+        {key_name_you_want_in_result_dict: data_you_want_to_find}. Parser finds keys recursively in lists/dicts,
         so set `data_you_want_to_find` using dot notation: ``firstkey.secondkey``.
 
         For example:
-        Keys {'ips': 'iocs.network.ip', 'url': 'iocs.network.url'} for list of feeds:
+        Keys {'ips': 'iocs.network.ip', 'url': 'iocs.network.url'} for the list of feeds:
 
         [
             {
@@ -617,7 +625,7 @@ class Poller(object):
 
     def close_session(self):
         """
-        Closes the poller session. Use this function to finish polling process.
+        Closes the poller session. Use this function to finish the polling process.
         """
         self._session.close()
 
@@ -650,11 +658,11 @@ class TIPoller(Poller):
     ):
         # type: (str, Optional[str], Optional[str], Optional[str], Union[int, str], Union[int, str], Union[int, str], Union[int, str], Optional[bool], Optional[bool]) -> Generator[Parser, Any, None]
         """
-        Creates generator of :class:`Parser` class objects for an update session
+        Creates a generator of :class:`Parser` class objects for an update session
         (feeds are sorted in ascending order) for `collection_name` with set parameters.
         `sequpdate` allows you to receive all relevant feeds. Such a request uses the sequpdate parameter,
         you will receive a portion of feeds that starts with the next `sequpdate` parameter for the current collection.
-        For all feeds in the Group IB Intelligence continuous numbering is carried out.
+        For all feeds in the Threat Intelligence continuous numbering is carried out.
         For example, the `sequpdate` equal to 1999998 can be in the `compromised/accounts` collection,
         and a feed with sequpdate equal to 1999999 can be in the `attacks/ddos` collection.
         If item updates (for example, if new attacks were associated with existing APT by our specialists or tor node
@@ -665,15 +673,15 @@ class TIPoller(Poller):
         For most collections, limits are set on the server and can't be exceeded.
 
         :param collection_name: collection to update.
-        :param date_from: start date of update session.
-        :param date_to: end date of update session.
-        :param query: query to search during update session.
+        :param date_from: start date of the update session.
+        :param date_to: end date of the update session.
+        :param query: query to search during the update session.
         :param sequpdate: identification number from which to start the session.
-        :param limit: size of portion in iteration.
+        :param limit: size of the portion in iteration.
         :param apply_hunting_rules: apply or not client hunting rules to get only filtered data (applicable for public_leak, phishing_group and breached)
         :param is_tailored: apply or not individual reports, which are matching client hunting rules (applicable for apt/threat, hi/threat)
         :param ignore_validation: ignore keys and collections validation
-        :param parse_events: used to parse events in list for CSV table (if we have nested list data, base params will be copied on each row)
+        :param parse_events: used to parse events in the list for CSV table (if we have nested list data, base params will be copied on each row)
         :rtype: Generator[:class:`Parser`]
         """
         session_type = "update"
@@ -708,22 +716,22 @@ class TIPoller(Poller):
     ):
         # type: (str, Optional[str], Optional[str], Optional[str], Union[int, str], Union[int, str], Union[int, str], Optional[bool], Optional[bool]) -> Generator
         """
-        Creates generator of :class:`Parser` class objects for the search session
-        (feeds are sorted in descending order, **excluding compromised/breached amd compromised/reaper**)
+        Creates a generator of :class:`Parser` class objects for the search session
+        (feeds are sorted in descending order, **excluding compromised/breached and compromised/reaper**)
         for `collection_name` with set parameters.
 
         .. warning:: Dates should be in one of these formats: "YYYY-MM-DD", "YYYY-MM-DDThh:mm:ssZ".
         For most collections, limits are set on the server and can't be exceeded.
 
         :param collection_name: collection to search.
-        :param date_from: start date of search session.
-        :param date_to: end date of search session.
-        :param query: query to search during session.
-        :param limit: size of portion in iteration.
+        :param date_from: start date of the search session.
+        :param date_to: end date of the search session.
+        :param query: query to search during the session.
+        :param limit: size of the portion in the iteration.
         :param apply_hunting_rules: apply or not client hunting rules to get only filtered data (applicable for public_leak, phishing_group and breached)
         :param is_tailored: apply or not individual reports, which are matching client hunting rules (applicable for apt/threat, hi/threat)
         :param ignore_validation: ignore keys and collections validation
-        :param parse_events: used to parse events in list for CSV table (if we have nested list data, base params will be copied on each row)
+        :param parse_events: used to parse events in the list for CSV table (if we have nested list data, base params will be copied on each row)
         :rtype: Generator[:class:`Parser`]
         """
         session_type = "search"
@@ -747,9 +755,9 @@ class TIPoller(Poller):
     def search_feed_by_id(self, collection_name, feed_id):
         # type: (str, str) -> Parser
         """
-        WARNING: please check if collection support this feature before use it in production code.
+        WARNING: please check if the collection supports this feature before use it in production code.
 
-        Searches for feed with `feed_id` in collection with `collection_name`.
+        Searches for a feed with the `feed_id` in the collection with `collection_name`.
 
         :param collection_name: in what collection to search.
         :param feed_id: id of feed to search.
@@ -765,12 +773,12 @@ class TIPoller(Poller):
     def search_file_in_threats(self, collection_name, feed_id, file_id):
         # type: (str, str, str) -> bytes
         """
-        Searches for file with `file_id` in collection with `collection_name` in feed with `feed_id`.
+        Searches for a file with the `file_id` in the collection with `collection_name` in the feed with `feed_id`.
 
         .. warning:: `Collection_name` should be apt/threat or hi/threat.
 
         :param collection_name: in what collection to search.
-        :param feed_id: id of feed with file to search.
+        :param feed_id: id of feed with a file to search.
         :param file_id: if of file to search.
         """
         Validator.validate_collection_name(collection_name)
@@ -781,7 +789,7 @@ class TIPoller(Poller):
     def execute_action_by_id(self, collection_name, feed_id, action, request_params=None, decode=True):
         # type: (str, str, str, Optional[Dict], Optional[bool]) -> List[Dict[str, Any]]
         """
-        Executes `action` for feed with `feed_id` in collection `collection_name`.
+        Executes `action` for the feed with `feed_id` in collection `collection_name`.
 
         :param collection_name: in what collection to search.
         :param feed_id: id of feed to search.
@@ -799,8 +807,8 @@ class TIPoller(Poller):
     def global_search(self, query):
         # type: (str) -> List[Dict[str, Any]]
         """
-        Global search across all collections with provided `query`, returns dict
-        with information about collection, count, etc.
+        Global search across all collections with a provided ` query `, returns dict
+        with information about the collection, count, etc.
 
         :param query: query to search for.
         """
@@ -835,12 +843,12 @@ class TIPoller(Poller):
     def get_seq_update_dict(self, date=None, collection=None, apply_hunting_rules=None):
         # type: (Optional[str], Optional[str], Union[int, str]) -> Dict[str, int]
         """
-        Gets dict with `seqUpdate` key for each collection from server based on provided date, collection name or
-        hunting rules. If date is not provided, returns dict for the current day.
+        Gets dict with `seqUpdate` key for each collection from the server based on the provided date, collection name or
+        hunting rules. If the date is not provided, returns dict for the current day.
 
         .. warning:: Date should be in "YYYY-MM-DD" format.
 
-        :param date: defines start date to get seqUpdate.
+        :param date: defines the start date to get seqUpdate.
         :param collection: filter by collection name
         :param apply_hunting_rules: apply or not client hunting rules to get only filtered data (applicable for public_leak, phishing_group and breached)
         :return: dict with collection names in keys and seq updates in values.
@@ -864,7 +872,7 @@ class TIPoller(Poller):
     def get_available_collections(self):
         # type: () -> List[str]
         """
-        Returns list of available collections.
+        Returns a list of available collections.
         """
         endpoint = 'user/granted_collections'
         collections_dict = self.send_request(endpoint=endpoint, params={})
@@ -882,7 +890,7 @@ class TIPoller(Poller):
 
     def get_hunting_rules_collections(self):
         """
-        Returns list of collections with hunting rules.
+        Returns a list of collections with hunting rules.
         """
         endpoint = 'user/granted_collections'
         response = self.send_request(endpoint=endpoint, params={})
@@ -922,11 +930,11 @@ class DRPPoller(Poller):
     ):
         # type: (str, Optional[str], Optional[str], Optional[str], Union[int, str], Union[int, str], Union[List[int], List[str]], Union[List[int], List[str]], Optional[bool]) -> Generator[Parser, Any, None]
         """
-        Creates generator of :class:`Parser` class objects for an update session
+        Creates a generator of :class:`Parser` class objects for an update session
         (feeds are sorted in ascending order) for `collection_name` with set parameters.
         `sequpdate` allows you to receive all relevant feeds. Such a request uses the sequpdate parameter,
         you will receive a portion of feeds that starts with the next `sequpdate` parameter for the current collection.
-        For all feeds in the Group IB Intelligence continuous numbering is carried out.
+        For all feeds in the Threat Intelligence continuous numbering is carried out.
         For example, the `sequpdate` equal to 1999998 can be in the `compromised/accounts` collection,
         and a feed with sequpdate equal to 1999999 can be in the `attacks/ddos` collection.
         If item updates (for example, if new attacks were associated with existing APT by our specialists or tor node
@@ -939,11 +947,11 @@ class DRPPoller(Poller):
         :param violation_type: 1 - scam; 2 - counterfeit
         :param section: 1 - Web; 2 - Mobile apps; 3 - Marketplace; 4 - Social networks; 5 - Advertising; 6 - Instant messengers
         :param collection_name: collection to update.
-        :param date_from: start date of update session.
-        :param date_to: end date of update session.
-        :param query: query to search during update session.
+        :param date_from: start date of the update session.
+        :param date_to: end date of the update session.
+        :param query: query to search during the update session.
         :param sequpdate: identification number from which to start the session.
-        :param limit: size of portion in iteration.
+        :param limit: size of the portion in iteration.
         :param ignore_validation: ignore keys and collections validation
         :rtype: Generator[:class:`Parser`]
         """
@@ -967,12 +975,12 @@ class DRPPoller(Poller):
     def get_seq_update_dict(self, date=None, collection=None):
         # type: (Optional[str], Optional[str]) -> Dict[str, int]
         """
-        Gets dict with `seqUpdate` key for each collection from server based on provided date, collection name or
-        hunting rules. If date is not provided, returns dict for the current day.
+        Gets dict with `seqUpdate` key for each collection from the server based on the provided date, collection name or
+        hunting rules. If a date is not provided, returns dict for the current day.
 
         .. warning:: Date should be in "YYYY-MM-DD" format.
 
-        :param date: defines start date to get seqUpdate.
+        :param date: defines the start date to get seqUpdate.
         :param collection: filter by collection name
         :return: dict with collection names in keys and seq updates in values.
         """
@@ -999,9 +1007,9 @@ class DRPPoller(Poller):
     def search_feed_by_id(self, collection_name, feed_id):
         # type: (str, str) -> Parser
         """
-        WARNING: please check if collection support this feature before use it in production code.
+        WARNING: please check if the collection supports this feature before use it in production code.
 
-        Searches for feed with `feed_id` in collection with `collection_name`.
+        Searches for a feed with the `feed_id` in the collection with `collection_name`.
 
         :param collection_name: in what collection to search.
         :param feed_id: id of feed to search.
@@ -1030,12 +1038,113 @@ class DRPPoller(Poller):
             logger.exception(AttributeError("Can not change the status of the selected feed"))
 
 
+class ASMPoller(Poller):
+    """
+    Poller is used for requests to ASM API.
+    """
+    def __init__(self, username, api_key, api_url=RequestConsts.API_URL_ASM):
+        # type: (str, str, str) -> None
+        """
+        :param username: Login.
+        :param api_key: API key, generated in your ASM Portal profile.
+        """
+        super().__init__(username=username, api_key=api_key, api_url=api_url)
+        # self._session.headers.update({'Host': 'client-api-test.dm-kuber.facct.dev'})
+
+    def create_update_generator(
+            self,
+            collection_name,
+            date_from=None,
+            date_to=None,
+            query=None,
+            sequpdate=None,
+            limit=None,
+            company_id=None,
+            ignore_validation=None,
+    ):
+        # type: (str, Optional[str], Optional[str], Optional[str], Union[int, str], Union[int, str], Union[str, int], Optional[bool]) -> Generator[Parser, Any, None]
+        """
+        Creates a generator of :class:`Parser` class objects for the search session
+        (feeds are sorted in descending order, **excluding compromised/breached and compromised/reaper**)
+        for `collection_name` with set parameters.
+
+        .. warning:: Dates should be in one of these formats: "YYYY-MM-DD", "YYYY-MM-DDThh:mm:ssZ".
+        For most collections, limits are set on the server and can't be exceeded.
+
+        :param collection_name: collection to search.
+        :param date_from: start date of the search session.
+        :param date_to: end date of the search session.
+        :param query: query to search during the session.
+        :param sequpdate: identification number from which to start the session.
+        :param limit: size of the portion in the iteration.
+        :param company_id: company ID
+        :param ignore_validation: ignore keys and collections validation
+        :rtype: Generator[:class:`Parser`]
+        """
+        session_type = "update"
+        generator_info = ASMGeneratorInfo(
+            collection_name=collection_name,
+            session_type=session_type,
+            date_from=date_from,
+            date_to=date_to,
+            query=query,
+            limit=limit,
+            keys=self._keys.get(collection_name),
+            iocs_keys=self._iocs_keys.get(collection_name),
+            ignore_validation=ignore_validation,
+            company_id=company_id
+        )
+        generator_class = ASMUpdateFeedGenerator(self, generator_info, sequpdate=sequpdate, company_id=company_id)
+        return generator_class.create_generator()
+
+
+    def get_seq_update_dict(
+            self,
+            date=None,
+            collection=None,
+    ):
+        # type: (Optional[str], Optional[str]) -> Any[str, int]
+        """
+        Gets dict with `seqUpdate` key for each collection from the server based on the provided date, collection name or
+        hunting rules. If a date is not provided, returns dict for the current day.
+
+        .. warning:: Date should be in "YYYY-MM-DD" format.
+
+        :param date: defines the start date to get seqUpdate.
+        :param collection: filter by collection name
+        :return: dict with collection names in keys and seq updates in values.
+        """
+        if date:
+            Validator.validate_date_format(date=date, formats=["%Y-%m-%d"])
+
+        # timestamp = datetime.fromisoformat(date).replace(tzinfo=timezone.utc).timestamp()
+        # fmt_str = r"%Y-%m-%dT%H:%M:%S.%f"
+
+        # replaces the fromisoformat, not available in python 3.6
+        fmt_str = r"%Y-%m-%d"
+        timestamp = datetime.strptime(date, fmt_str).replace(tzinfo=timezone.utc).timestamp()
+
+        seconds = datetime.fromtimestamp(timestamp, tz=timezone.utc).timestamp()
+        miliseconds = seconds * 1000
+        seqUpdate = int(miliseconds)
+
+        if collection:
+            return seqUpdate
+        else:
+            seq_update_dict = {}
+            for key in CollectionConsts.ASM_COLLECTIONS_INFO.keys():
+                seq_update_dict[key] = seqUpdate
+            return seq_update_dict
+
+
+
+
 class FeedGenerator(object):
     """
     Base Feed Generator class
     """
     def __init__(self, poller_object, generator_info):
-        # type: (Union[TIPoller, DRPPoller], Union[TIGeneratorInfo, DRPGeneratorInfo]) -> None
+        # type: (Union[TIPoller, DRPPoller, ASMPoller], Union[TIGeneratorInfo, DRPGeneratorInfo, ASMGeneratorInfo]) -> None
         self.i = 0
         self.total_amount = 0
         self.poller_object = poller_object
@@ -1076,7 +1185,7 @@ class FeedGenerator(object):
 
 class TIUpdateFeedGenerator(FeedGenerator):
     def __init__(self, poller_object, generator_info, sequpdate):
-        # type: (TIPoller, TIGeneratorInfo, Union[int, str]) -> None
+        # type: (TIPoller, TIGeneratorInfo, Union[int, str, None]) -> None
         super().__init__(poller_object, generator_info)
         self.sequpdate = sequpdate
         self.endpoint = f"{self.generator_info.collection_name}/updated"
@@ -1184,7 +1293,7 @@ class TISearchFeedGenerator(FeedGenerator):
 class DPRUpdateFeedGenerator(FeedGenerator):
 
     def __init__(self, poller_object, generator_info, sequpdate):
-        # type: (DRPPoller, DRPGeneratorInfo, Union[int, str]) -> None
+        # type: (DRPPoller, DRPGeneratorInfo, Union[int, str, None]) -> None
         super().__init__(poller_object, generator_info)
         self.sequpdate = sequpdate
         self.endpoint = f"{self.generator_info.collection_name}"
@@ -1196,6 +1305,46 @@ class DPRUpdateFeedGenerator(FeedGenerator):
             "violationType[]": self.generator_info.violationType,
             "section[]": self.generator_info.section
         }
+
+    def _reset_params(self, portion):
+        self.sequpdate = portion.sequpdate
+        self.generator_info.date_from = None
+
+
+class ASMUpdateFeedGenerator(FeedGenerator):
+    def __init__(self, poller_object, generator_info, sequpdate, company_id):
+        # type: (ASMPoller, ASMGeneratorInfo, Union[int, str, None], Union[int, str, None]) -> None
+        super().__init__(poller_object, generator_info)
+        self.sequpdate = sequpdate
+        self.company_id = company_id
+        self.endpoint = f"{self.generator_info.collection_name}/updated"
+
+
+    def create_generator(self):
+        # type: () -> Generator[Parser, Any, None]
+        logger.info(f"Starting {self.generator_info.session_type} "
+                    f"session for {self.generator_info.collection_name} collection")
+
+        while True:
+            self.i += 1
+            logger.info(f"Loading {self.i} portion")
+            chunk = self.poller_object.send_request(endpoint=self.endpoint, body=self._get_data(), method='POST')
+            portion = Parser(chunk, self.generator_info.keys, self.generator_info.iocs_keys)
+            logger.info(f"{self.i} portion was loaded")
+            if portion.portion_size == 0:
+                logger.info(f"{self.generator_info.session_type} session for {self.generator_info.collection_name} "
+                            f"collection was finished, loaded {self.total_amount} feeds")
+                break
+            self.total_amount += portion.portion_size
+            self._reset_params(portion)
+            yield portion
+
+    def _get_data(self):
+        return {
+            "companyId": self.company_id,
+            "limit": 100,
+            "seqUpdate": self.sequpdate
+            }
 
     def _reset_params(self, portion):
         self.sequpdate = portion.sequpdate

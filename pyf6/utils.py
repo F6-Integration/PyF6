@@ -3,7 +3,7 @@
 Copyright (c) 2025 - present by F6
 """
 from datetime import datetime
-from typing import Union
+from typing import Union, Dict, Any
 from urllib.parse import urljoin
 
 try:
@@ -18,7 +18,7 @@ from .const import CollectionConsts
 class Validator(object):
     @classmethod
     def validate_collection_name(cls, collection_name, method=None):
-        """Validate a collection name is exist in API and if update feed generator may be created"""
+        """Validate a collection name exists in the API, and if update feed generator may be created"""
         if method == "update" and collection_name in CollectionConsts.ONLY_SEARCH_COLLECTIONS:
             raise InputException(f"{collection_name} collection must be used only with a search generator.")
 
@@ -60,7 +60,7 @@ class Validator(object):
 
     @classmethod
     def validate_group_collections(cls, collections):
-        """Validate group collections are in allowed list"""
+        """Validate group collections are in the allowed list"""
         if collections in CollectionConsts.GROUP_COLLECTIONS:
             return True
 
@@ -73,7 +73,7 @@ class ParserHelper(object):
     @classmethod
     def find_by_template(cls, feed, keys, **kwargs):
         # type: (dict, dict, dict) -> dict
-        """Recursively check feed elements using template (mapper) and return parsed dict."""
+        """Recursively check feed elements using a template (mapper) and return a parsed dict."""
         parsed_dict = {}
         for key, value in keys.items():
             # if value dot-string {"pl": "malwareList.platform"} or a dict ("pls": {"pl1": "malwareList.platform"})
@@ -239,7 +239,7 @@ class ProxyConfigurator:
     ):
         # type: (str, str, str, str, str, Any) -> Union[Dict[str, str], None]
         """
-        Method that returns proxies from given arguments. Only HTTP and HTTPS allowed.
+        Method that returns proxies from given arguments. Only HTTP and HTTPS are allowed.
 
             Return format:
 
@@ -252,7 +252,7 @@ class ProxyConfigurator:
         :param proxy_ip: 255.255.255.255 format
         :param proxy_port: 3128, 3129, ...
         :param proxy_username: Username
-        :param proxy_password: Password parametr ignored for secure purpose
+        :param proxy_password: Password parameter ignored for secure purpose
         :param encrypted_data_handler: Encryption object engine which is used to decrypt password
         :return: proxies
         """

@@ -14,6 +14,7 @@ class TechnicalConsts(object):
 class RequestConsts(object):
     API_URL = 'https://ti.f6.security/api/v2/'
     API_URL_DRP = 'https://drp.f6.security/client_api/'
+    API_URL_ASM = 'https://asm.f6.security/api/v1/'
     HEADERS = {
         "Accept": "*/*",
         "User-Agent": f"pyf6/{TechnicalConsts.library_version}"
@@ -118,6 +119,12 @@ class CollectionConsts(object):
         "compromised/git_leaks": {"date_formats": BASE_DATE_FORMATS},
         "compromised/darkweb": {"date_formats": BASE_DATE_FORMATS},
         "compromised/breached_db": {"date_formats": BASE_DATE_FORMATS}
+    }
+
+    ASM_COLLECTIONS_INFO = {
+        "reports": {"date_formats": BASE_DATE_FORMATS},
+        "issue": {"date_formats": BASE_DATE_FORMATS},
+        "assets": {"date_formats": BASE_DATE_FORMATS},
     }
 
     # TI Collections extra

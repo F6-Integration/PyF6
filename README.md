@@ -757,7 +757,7 @@ The same can be done for domain, email, hash, etc. (`/api/v2/search?q=domain:goo
     {
         "apiPath": "suspicious_ip/open_proxy",
         "label": "Suspicious IP :: Open Proxy",
-        "link": "https://tap.group-ib.com/api/v2/suspicious_ip/open_proxy?q=ip:8.8.8.8",
+        "link": "https://<base URL>/api/v2/suspicious_ip/open_proxy?q=ip:8.8.8.8",
         "count": 14,
         "time": 0.304644684,
         "detailedLinks": null
@@ -765,7 +765,7 @@ The same can be done for domain, email, hash, etc. (`/api/v2/search?q=domain:goo
     {
         "apiPath": "attacks/ddos",
         "label": "Attack :: DDoS",
-        "link": "https://tap.group-ib.com/api/v2/attacks/ddos?q=ip:8.8.8.8",
+        "link": "https://<base URL>/api/v2/attacks/ddos?q=ip:8.8.8.8",
         "count": 1490,
         "time": 0.389418291,
         "detailedLinks": null
