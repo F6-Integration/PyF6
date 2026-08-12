@@ -881,6 +881,7 @@ curl -X 'GET' 'https://<base URL>/api/v2/apt/threat/updated?limit=500&seqUpdate=
 ```
 python setup.py sdist
 python setup.py bdist_wheel
+python3 -m twine upload --repository pypi --verbose dist/*
 ```
 
 ```

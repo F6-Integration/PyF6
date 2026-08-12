@@ -72,6 +72,7 @@ class TIGeneratorInfo(GeneratorInfo):
     apply_hunting_rules: Union[int, str, None] = None
     is_tailored: Union[int, str, None] = None
     parse_events: Optional[bool] = None
+    params: Optional[Dict[str, Any]] = None
 
     def _validate_default_fields(self, collections_info=CollectionConsts.TI_COLLECTIONS_INFO):
         super()._validate_default_fields(collections_info=CollectionConsts.TI_COLLECTIONS_INFO)
@@ -94,6 +95,11 @@ class TIGeneratorInfo(GeneratorInfo):
                     raise ValueError
             except ValueError:
                 logger.exception("Wrong is_tailored input, it should be '0' or '1'.")
+
+        if self.params is not None:
+            pass
+        else:
+            self.params = {}
 
 
 @dataclass(order=True)
@@ -655,8 +661,9 @@ class TIPoller(Poller):
             is_tailored=None,
             ignore_validation=None,
             parse_events=False,
+            params=None,
     ):
-        # type: (str, Optional[str], Optional[str], Optional[str], Union[int, str], Union[int, str], Union[int, str], Union[int, str], Optional[bool], Optional[bool]) -> Generator[Parser, Any, None]
+        # type: (str, Optional[str], Optional[str], Optional[str], Union[int, str], Union[int, str], Union[int, str], Union[int, str], Optional[bool], Optional[bool], Optional[Dict[str, Any]]) -> Generator[Parser, Any, None]
         """
         Creates a generator of :class:`Parser` class objects for an update session
         (feeds are sorted in ascending order) for `collection_name` with set parameters.
@@ -682,6 +689,7 @@ class TIPoller(Poller):
         :param is_tailored: apply or not individual reports, which are matching client hunting rules (applicable for apt/threat, hi/threat)
         :param ignore_validation: ignore keys and collections validation
         :param parse_events: used to parse events in the list for CSV table (if we have nested list data, base params will be copied on each row)
+        :param params: used to add extra params to the request (ex: {"tags[filterSpam][]": 1})
         :rtype: Generator[:class:`Parser`]
         """
         session_type = "update"
@@ -698,6 +706,7 @@ class TIPoller(Poller):
             iocs_keys=self._iocs_keys.get(collection_name),
             ignore_validation=ignore_validation,
             parse_events=parse_events,
+            params=params,
         )
         generator_class = TIUpdateFeedGenerator(self, generator_info, sequpdate=sequpdate)
         return generator_class.create_generator()
@@ -712,9 +721,10 @@ class TIPoller(Poller):
             apply_hunting_rules=None,
             is_tailored=None,
             ignore_validation=None,
-            parse_events=False
+            parse_events=False,
+            params=None,
     ):
-        # type: (str, Optional[str], Optional[str], Optional[str], Union[int, str], Union[int, str], Union[int, str], Optional[bool], Optional[bool]) -> Generator
+        # type: (str, Optional[str], Optional[str], Optional[str], Union[int, str], Union[int, str], Union[int, str], Optional[bool], Optional[bool], Optional[Dict[str, Any]]) -> Generator
         """
         Creates a generator of :class:`Parser` class objects for the search session
         (feeds are sorted in descending order, **excluding compromised/breached and compromised/reaper**)
@@ -732,6 +742,7 @@ class TIPoller(Poller):
         :param is_tailored: apply or not individual reports, which are matching client hunting rules (applicable for apt/threat, hi/threat)
         :param ignore_validation: ignore keys and collections validation
         :param parse_events: used to parse events in the list for CSV table (if we have nested list data, base params will be copied on each row)
+        :param params: used to add extra params to the request (ex: {"tags[filterSpam][]": 1})
         :rtype: Generator[:class:`Parser`]
         """
         session_type = "search"
@@ -747,7 +758,8 @@ class TIPoller(Poller):
             keys=self._keys.get(collection_name),
             iocs_keys=self._iocs_keys.get(collection_name),
             ignore_validation=ignore_validation,
-            parse_events=parse_events
+            parse_events=parse_events,
+            params=params,
         )
         generator_class = TISearchFeedGenerator(self, generator_info)
         return generator_class.create_generator()
@@ -1196,6 +1208,7 @@ class TIUpdateFeedGenerator(FeedGenerator):
             "seqUpdate": self.sequpdate,
             "apply_hunting_rules": self.generator_info.apply_hunting_rules,
             "is_tailored": self.generator_info.is_tailored,
+            **self.generator_info.params,
         }
 
     def _reset_params(self, portion):
@@ -1246,7 +1259,11 @@ class TISearchFeedGenerator(FeedGenerator):
         self.result_id = None
 
     def _get_params(self):
-        return {**super()._get_params(), "resultId": self.result_id}
+        return {
+            **super()._get_params(),
+            "resultId": self.result_id,
+            **self.generator_info.params,
+        }
 
     def _reset_params(self, portion):
         self.result_id = portion._result_id

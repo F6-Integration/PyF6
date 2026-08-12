@@ -8,7 +8,7 @@ This module contains consts.
 
 class TechnicalConsts(object):
     library_name = "pyf6"
-    library_version = "0.7.12"
+    library_version = "0.7.13"
 
 
 class RequestConsts(object):
